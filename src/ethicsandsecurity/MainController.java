@@ -37,10 +37,6 @@ public class MainController implements Initializable {
     @FXML public LineChart<Double, Double> graph2;
     ArrayList<Double> original;
     ArrayList<Double> data;
-    ArrayList<Double> encdata1;
-    ArrayList<Double> encdata2;
-    ArrayList<Double> decdata1;
-    ArrayList<Double> decdata2;
     ArrayList<Integer> ksquantized;
     ArrayList<Integer> a51quantized;
     Quantizer q;
@@ -71,7 +67,8 @@ public class MainController implements Initializable {
     private void handleFileChooserButton(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose file");
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("ECG data","*.dat"));
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text file", "*.txt"),
+                                                new FileChooser.ExtensionFilter("ECG data","*.dat"));
         File selectedFile = fileChooser.showOpenDialog(pane.getScene().getWindow());
         fillTable(selectedFile);
     }
@@ -86,19 +83,30 @@ public class MainController implements Initializable {
 
     private void fillTable(File file) {
         if (file != null && file.exists() && file.canRead()) {
-            encdata1 = encdata2 = decdata1 = decdata1 = null;
             // Create arrays
             original = new ArrayList<>();
             data = new ArrayList<>();
-            try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-                original = (ArrayList<Double>) ois.readObject();
-                q = (Quantizer) ois.readObject();
-                ksquantized = (ArrayList<Integer>) ois.readObject();
-                a51quantized = (ArrayList<Integer>) ois.readObject();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (file.getName().substring(file.getName().length()-4, file.getName().length()).equals(".txt")) {
+                try (Scanner reader = new Scanner(file)) {
+                    while (reader.hasNextDouble()) original.add(reader.nextDouble());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                q = new Quantizer();
+                ks = new Knapsack(); a51 = new A51();
+            } else {
+                try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+                    original = (ArrayList<Double>) ois.readObject();
+                    q = (Quantizer) ois.readObject();
+                    ksquantized = (ArrayList<Integer>) ois.readObject();
+                    a51quantized = (ArrayList<Integer>) ois.readObject();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             // Created knapsack and a51 using q
             // Set file path in textfield
@@ -187,7 +195,10 @@ public class MainController implements Initializable {
         } else {
             if (rb1.isSelected()) {
                 ks = new Knapsack(q);
-                ks.quantized = new ArrayList<>(ksquantized);
+                if (ksquantized != null)
+                    ks.quantized = new ArrayList<>(ksquantized);
+                else
+                    ks.encryption(original);
                 // Clear table and graph
                 graph2.getData().clear();
                 data = ks.decryption();
@@ -199,7 +210,10 @@ public class MainController implements Initializable {
                 //addTooltip(graph2);
             } else if (rb2.isSelected()) {
                 a51 = new A51(q);
-                a51.quantized = new ArrayList<>(a51quantized);
+                if (a51quantized != null)
+                    a51.quantized = new ArrayList<>(a51quantized);
+                else
+                    a51.encryption(original);
                 graph2.getData().clear();
                 data = a51.decryption();
                 data.addAll(a51.decryption());data.addAll(a51.decryption());data.addAll(a51.decryption());
