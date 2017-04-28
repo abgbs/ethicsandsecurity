@@ -42,6 +42,7 @@ public class MainController implements Initializable {
     Quantizer q;
     Knapsack ks;
     A51 a51;
+    Boolean isTxt;
 
     @FXML
     public void initialize(URL location, ResourceBundle resource) {
@@ -96,6 +97,7 @@ public class MainController implements Initializable {
                 }
                 q = new Quantizer();
                 ks = new Knapsack(); a51 = new A51();
+                isTxt = true;
             } else {
                 try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
                     original = (ArrayList<Double>) ois.readObject();
@@ -216,7 +218,7 @@ public class MainController implements Initializable {
                     a51.encryption(original);
                 graph2.getData().clear();
                 data = a51.decryption();
-                //data.addAll(a51.decryption());data.addAll(a51.decryption());data.addAll(a51.decryption());
+                if (isTxt) { data.addAll(a51.decryption());data.addAll(a51.decryption());data.addAll(a51.decryption()); };
                 graph2.getData().add(getGraphSeries(data));
                 tab3.setText("Decrypted data");
                 pane.getTabs().add(2, tab3);
