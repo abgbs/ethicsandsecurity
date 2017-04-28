@@ -216,7 +216,7 @@ public class MainController implements Initializable {
                     a51.encryption(original);
                 graph2.getData().clear();
                 data = a51.decryption();
-                data.addAll(a51.decryption());data.addAll(a51.decryption());data.addAll(a51.decryption());
+                //data.addAll(a51.decryption());data.addAll(a51.decryption());data.addAll(a51.decryption());
                 graph2.getData().add(getGraphSeries(data));
                 tab3.setText("Decrypted data");
                 pane.getTabs().add(2, tab3);
